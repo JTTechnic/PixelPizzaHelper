@@ -1,0 +1,38 @@
+{
+  "name": "pixelpizzastats",
+  "version": "1.0.0",
+  "description": "Displays the pixel pizza discord server stats",
+  "main": "dist/bot.js",
+  "scripts": {
+    "start": "node dist/bot.js",
+    "build": "node_modules/.bin/tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JTTechnic/PixelPizzaStats.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JTTechnic/PixelPizzaStats/issues"
+  },
+  "homepage": "https://github.com/JTTechnic/PixelPizzaStats#readme",
+  "dependencies": {
+    "discord.js": "^12.5.3",
+    "dotenv": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^15.6.1",
+    "@types/ws": "^7.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
+    "@typescript-eslint/eslint-plugin-tslint": "^4.22.0",
+    "@typescript-eslint/parser": "^4.22.0",
+    "eslint": "^7.25.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsdoc": "^32.3.3",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "eslint-plugin-unicorn": "^31.0.0",
+    "typescript": "^3.4.3"
+  }
+}
