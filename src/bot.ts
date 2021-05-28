@@ -63,6 +63,10 @@ client
 		console.log(`${client.user?.username} is ready`);
 	})
 	.on("guildMemberAdd", () => setStats(channel))
-	.on("guildMemberRemove", () => setStats(channel));
+	.on("guildMemberRemove", () => setStats(channel))
+	.on("channelCreate", () => setStats(channel))
+	.on("channelDelete", () => setStats(channel))
+	.on("emojiCreate", () => setStats(channel))
+	.on("emojiDelete", () => setStats(channel));
 
 client.login(process.env.BOT_TOKEN);
