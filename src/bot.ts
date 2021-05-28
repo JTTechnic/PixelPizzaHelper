@@ -9,7 +9,8 @@ let channel: TextChannel | NewsChannel;
 
 const setStats = async (channel: TextChannel | NewsChannel) => {
 	try {
-		const members = await channel.guild.members.fetch();
+		const guild = channel.guild;
+		const members = await guild.members.fetch();
 		const sentMessage = await channel.send(new MessageEmbed({
 			color: "BLUE",
 			title: "Bot and server stats",
@@ -25,6 +26,22 @@ const setStats = async (channel: TextChannel | NewsChannel) => {
 				{
 					name: "Bots",
 					value: members.filter(member => member.user.bot).size
+				},
+				{
+					name: "Categories",
+					value: guild.channels.cache.filter(channel => channel.type === "category").size
+				},
+				{
+					name: "Channels",
+					value: guild.channels.cache.filter(channel => channel.type !== "category").size
+				},
+				{
+					name: "Emojis",
+					value: guild.emojis.cache.filter(emoji => !emoji.animated).size
+				},
+				{
+					name: "Animated Emojis",
+					value: guild.emojis.cache.filter(emoji => emoji.animated).size
 				}
 			]
 		}));
