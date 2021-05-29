@@ -36,6 +36,10 @@ const setStats = async (channel: TextChannel | NewsChannel) => {
 					value: guild.channels.cache.filter(channel => channel.type !== "category").size
 				},
 				{
+					name: "Roles",
+					value: guild.roles.cache.size
+				},
+				{
 					name: "Emojis",
 					value: guild.emojis.cache.filter(emoji => !emoji.animated).size
 				},
@@ -67,6 +71,8 @@ client
 	.on("channelCreate", () => setStats(channel))
 	.on("channelDelete", () => setStats(channel))
 	.on("emojiCreate", () => setStats(channel))
-	.on("emojiDelete", () => setStats(channel));
+	.on("emojiDelete", () => setStats(channel))
+	.on("roleCreate", () => setStats(channel))
+	.on("roleDelete", () => setStats(channel));
 
 client.login(process.env.BOT_TOKEN);
