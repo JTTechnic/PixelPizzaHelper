@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { Client, DMChannel, MessageEmbed, NewsChannel, TextChannel, WebhookClient } from "discord.js";
+import { Client, DMChannel, MessageEmbed, WebhookClient } from "discord.js";
 
 dotenv.config();
 
@@ -9,15 +9,19 @@ process.on("unhandledRejection", (reason, promise) => {
 
 const client = new Client();
 
-let channel: TextChannel | NewsChannel;
+const setStats = async () => {
+	const {STATS_WEBHOOK_ID, STATS_WEBHOOK_TOKEN, STATS_CHANNEL_ID} = process.env;
 
-const setStats = async (channel: TextChannel | NewsChannel) => {
-	const {STATS_WEBHOOK_ID, STATS_WEBHOOK_TOKEN} = process.env;
-	if(!STATS_WEBHOOK_ID || !STATS_WEBHOOK_TOKEN) return console.warn("Stats webhook config has not been set");
-	const webhook = new WebhookClient(STATS_WEBHOOK_ID, STATS_WEBHOOK_TOKEN);
+	if(!STATS_WEBHOOK_ID || !STATS_WEBHOOK_TOKEN || !STATS_CHANNEL_ID) return console.warn("Stats config has not been set");
+
+	const channel = await client.channels.fetch(STATS_CHANNEL_ID);
+
+	if(!channel || !channel.isText() || channel instanceof DMChannel) return console.warn("Invalid stats channel");
+
 	const guild = channel.guild;
 	const members = await guild.members.fetch();
-	const sentMessage = await webhook.send({
+
+	const sentMessage = await new WebhookClient(STATS_WEBHOOK_ID, STATS_WEBHOOK_TOKEN).send({
 		avatarURL: client.user?.displayAvatarURL(),
 		username: "Pixel Pizza Stats",
 		embeds: [
@@ -61,6 +65,7 @@ const setStats = async (channel: TextChannel | NewsChannel) => {
 			})
 		]
 	});
+
 	for(const message of (await channel.messages.fetch({before: sentMessage.id})).values()){
 		if(message.deletable) await message.delete();
 	}
@@ -68,20 +73,16 @@ const setStats = async (channel: TextChannel | NewsChannel) => {
 
 client
 	.on("ready", async () => {
-		if(!process.env.STATS_CHANNEL_ID) process.exit();
-		const fetchedChannel = await client.channels.fetch(process.env.STATS_CHANNEL_ID);
-		if(!fetchedChannel || !fetchedChannel.isText() || fetchedChannel instanceof DMChannel) process.exit();
-		channel = fetchedChannel;
-		await setStats(channel);
+		await setStats();
 		console.log(`${client.user?.username} is ready`);
 	})
-	.on("guildMemberAdd", async () => await setStats(channel))
-	.on("guildMemberRemove", async () => await setStats(channel))
-	.on("channelCreate", async () => await setStats(channel))
-	.on("channelDelete", async () => await setStats(channel))
-	.on("emojiCreate", async () => await setStats(channel))
-	.on("emojiDelete", async () => await setStats(channel))
-	.on("roleCreate", async () => await setStats(channel))
-	.on("roleDelete", async () => await setStats(channel));
+	.on("guildMemberAdd", async () => await setStats())
+	.on("guildMemberRemove", async () => await setStats())
+	.on("channelCreate", async () => await setStats())
+	.on("channelDelete", async () => await setStats())
+	.on("emojiCreate", async () => await setStats())
+	.on("emojiDelete", async () => await setStats())
+	.on("roleCreate", async () => await setStats())
+	.on("roleDelete", async () => await setStats());
 
 client.login(process.env.BOT_TOKEN);
