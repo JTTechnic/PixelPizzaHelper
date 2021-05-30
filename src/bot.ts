@@ -3,57 +3,57 @@ import { Client, DMChannel, MessageEmbed, NewsChannel, TextChannel } from "disco
 
 dotenv.config();
 
+process.on("unhandledRejection", (reason, promise) => {
+	console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
 const client = new Client();
 
 let channel: TextChannel | NewsChannel;
 
 const setStats = async (channel: TextChannel | NewsChannel) => {
-	try {
-		const guild = channel.guild;
-		const members = await guild.members.fetch();
-		const sentMessage = await channel.send(new MessageEmbed({
-			color: "BLUE",
-			title: "Bot and server stats",
-			fields: [
-				{
-					name: "All members",
-					value: members.size
-				},
-				{
-					name: "Members",
-					value: members.filter(member => !member.user.bot).size
-				},
-				{
-					name: "Bots",
-					value: members.filter(member => member.user.bot).size
-				},
-				{
-					name: "Categories",
-					value: guild.channels.cache.filter(channel => channel.type === "category").size
-				},
-				{
-					name: "Channels",
-					value: guild.channels.cache.filter(channel => channel.type !== "category").size
-				},
-				{
-					name: "Roles",
-					value: guild.roles.cache.size
-				},
-				{
-					name: "Emojis",
-					value: guild.emojis.cache.filter(emoji => !emoji.animated).size
-				},
-				{
-					name: "Animated Emojis",
-					value: guild.emojis.cache.filter(emoji => emoji.animated).size
-				}
-			]
-		}));
-		for(const message of (await channel.messages.fetch({before: sentMessage.id})).values()){
-			if(message.deletable) message.delete();
-		}
-	} catch (error) {
-		console.error(error);
+	const guild = channel.guild;
+	const members = await guild.members.fetch();
+	const sentMessage = await channel.send(new MessageEmbed({
+		color: "BLUE",
+		title: "Bot and server stats",
+		fields: [
+			{
+				name: "All members",
+				value: members.size
+			},
+			{
+				name: "Members",
+				value: members.filter(member => !member.user.bot).size
+			},
+			{
+				name: "Bots",
+				value: members.filter(member => member.user.bot).size
+			},
+			{
+				name: "Categories",
+				value: guild.channels.cache.filter(channel => channel.type === "category").size
+			},
+			{
+				name: "Channels",
+				value: guild.channels.cache.filter(channel => channel.type !== "category").size
+			},
+			{
+				name: "Roles",
+				value: guild.roles.cache.size
+			},
+			{
+				name: "Emojis",
+				value: guild.emojis.cache.filter(emoji => !emoji.animated).size
+			},
+			{
+				name: "Animated Emojis",
+				value: guild.emojis.cache.filter(emoji => emoji.animated).size
+			}
+		]
+	}));
+	for(const message of (await channel.messages.fetch({before: sentMessage.id})).values()){
+		if(message.deletable) await message.delete();
 	}
 };
 
@@ -63,16 +63,16 @@ client
 		const fetchedChannel = await client.channels.fetch(process.env.STATS_CHANNEL_ID);
 		if(!fetchedChannel || !fetchedChannel.isText() || fetchedChannel instanceof DMChannel) process.exit();
 		channel = fetchedChannel;
-		setStats(channel);
+		await setStats(channel);
 		console.log(`${client.user?.username} is ready`);
 	})
-	.on("guildMemberAdd", () => setStats(channel))
-	.on("guildMemberRemove", () => setStats(channel))
-	.on("channelCreate", () => setStats(channel))
-	.on("channelDelete", () => setStats(channel))
-	.on("emojiCreate", () => setStats(channel))
-	.on("emojiDelete", () => setStats(channel))
-	.on("roleCreate", () => setStats(channel))
-	.on("roleDelete", () => setStats(channel));
+	.on("guildMemberAdd", async () => await setStats(channel))
+	.on("guildMemberRemove", async () => await setStats(channel))
+	.on("channelCreate", async () => await setStats(channel))
+	.on("channelDelete", async () => await setStats(channel))
+	.on("emojiCreate", async () => await setStats(channel))
+	.on("emojiDelete", async () => await setStats(channel))
+	.on("roleCreate", async () => await setStats(channel))
+	.on("roleDelete", async () => await setStats(channel));
 
 client.login(process.env.BOT_TOKEN);
