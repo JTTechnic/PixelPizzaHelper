@@ -19,10 +19,12 @@
   },
   "homepage": "https://github.com/JTTechnic/PixelPizzaStats#readme",
   "dependencies": {
+    "common-tags": "^1.8.0",
     "discord.js": "github:discordjs/discord.js#e033dd080aabb12dcfe2a0708a10a92d4fb68000",
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
+    "@types/common-tags": "^1.8.0",
     "@types/node": "^15.6.1",
     "@types/ws": "^7.4.0",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
