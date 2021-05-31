@@ -1,6 +1,69 @@
-import { Client, ClientEvents, DMChannel, MessageEmbed, WebhookClient } from "discord.js";
+import { ApplicationCommandPermissions, Client, ClientEvents, Collection, DMChannel, Guild, MessageEmbed, WebhookClient } from "discord.js";
+import { Command } from "./command";
 
 class CustomClient extends Client {
+	public commands: Collection<string, Command> = new Collection();
+
+	public async syncCommands(){
+		const commands = this.commands;
+		// Sync before commands are in discord
+		for(const command of commands.values()) {
+			console.log(`syncStart ${command.options.name}`);
+			await command.syncStart?.();
+		}
+		// Sync to set commands in discord
+		for(const command of commands.values()) {
+			console.log(`sync ${command.options.name}`);
+			await command.sync?.();
+		}
+		// Sync after commands are in discord
+		for(const command of commands.values()) {
+			console.log(`syncEnd ${command.options.name}`);
+			await command.syncEnd?.();
+		}
+		console.log("Done syncing commands");
+	}
+
+	public async setCommands(){
+		const {commands} = this;
+
+		// sync all commands
+		await this.syncCommands();
+
+		// set global commands
+		await this.application?.commands.set(commands.filter(command => command.global).map(command => command.options));
+
+		// set per guild commands
+		const guilds: Guild[] = [];
+		for(const command of commands.values()){
+			if(!command.guilds.length) continue;
+			for(const guild of command.getGuilds()){
+				if(guilds.includes(guild)) continue;
+				const commandsForGuild = commands.filter(command => command.guilds?.map(guildResolvable => this.guilds.resolve(guildResolvable)).includes(guild) ?? false);
+				try {
+					for(const command of (await guild.commands.set(commandsForGuild.map(command => command.options))).values()){
+						if(!process.env.OWNER_ID) break;
+						let permissions: ApplicationCommandPermissions[];
+						try {
+							permissions = await command.fetchPermissions();
+						} catch (error) {
+							permissions = [];
+						}
+						permissions.push({
+							id: process.env.OWNER_ID,
+							permission: true,
+							type: "USER"
+						});
+						await command.setPermissions(permissions);
+					}
+				} catch (error) {
+					console.error(error);
+				}
+				guilds.push(guild);
+			}
+		}
+	}
+
 	public async setStats(){
 		const {STATS_WEBHOOK_ID, STATS_WEBHOOK_TOKEN, STATS_CHANNEL_ID} = process.env;
 
