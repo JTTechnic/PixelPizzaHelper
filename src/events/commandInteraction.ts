@@ -12,7 +12,7 @@ module.exports = class InteractionEvent extends ClientEvent {
 		const command = this.client.commands.get(interaction.commandName);
 		if(!command) return;
 		try {
-			if(command.defer) await interaction.defer({ephemeral: command.empheral});
+			if(command.defer) await interaction.defer({ephemeral: command.ephemeral});
 			command.run(interaction);
 			console.log(`${command.options.name} has been executed`);
 		} catch (error) {

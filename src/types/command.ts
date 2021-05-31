@@ -1,4 +1,4 @@
-import { GuildResolvable, ApplicationCommandData, CommandInteraction } from "discord.js";
+import { GuildResolvable, ApplicationCommandData, CommandInteraction, Guild } from "discord.js";
 import { CustomClient } from "./client";
 
 interface Command {
@@ -10,46 +10,45 @@ interface Command {
 abstract class Command {
 	public readonly client: CustomClient;
 	public readonly defer: boolean;
-	public readonly empheral: boolean;
+	public readonly ephemeral: boolean;
 	public readonly global: boolean;
-	public readonly guilds?: GuildResolvable[];
+	public readonly guilds: GuildResolvable[];
 	public options: ApplicationCommandData;
 
 	public constructor(client: CustomClient, commandOptions: ApplicationCommandData, options: {
 		defer?: boolean;
-		empheral?: boolean;
+		ephemeral?: boolean;
 		global?: boolean;
 		guilds?: GuildResolvable[];
 	} = {
 		defer: true,
-		empheral: false,
+		ephemeral: false,
 		global: true,
 		guilds: undefined
 	}) {
-		options.defer = options.defer ?? true;
-		options.empheral = options.empheral ?? false;
-		options.global = options.global ?? true;
 		options.guilds = options.guilds ?? (process.env.MAIN_GUILD ? [process.env.MAIN_GUILD] : undefined);
 		this.client = client;
-		this.defer = options.defer;
-		this.empheral = options.empheral;
-		this.global = options.global;
-		this.guilds = options.guilds;
+		this.defer = options.defer ?? true;
+		this.ephemeral = options.ephemeral ?? false;
+		this.global = options.global ?? true;
+		this.guilds = options.global ? [] : (options.guilds ?? []);
 		this.options = commandOptions;
 	}
 
 	public async updateCommand(){
-		const guilds = this.guilds || [], client = this.client, options = this.options;
+		const client = this.client, options = this.options;
 		if(this.global && client.application){
 			const command = (await client.application.commands.fetch()).find(command => command.name === options.name);
 			if(command) await command.edit(options);
 		}
-		for(const guildResolvable of guilds){
-			const guild = client.guilds.resolve(guildResolvable);
-			if(!guild) continue;
+		for(const guild of this.getGuilds()){
 			const guildCommand = (await guild.commands.fetch()).find(command => command.name === options.name);
 			if(guildCommand) await guildCommand.edit(options);
 		}
+	}
+
+	public getGuilds(): Guild[] {
+		return this.guilds.map(guildResolvable => this.client.guilds.resolve(guildResolvable)).filter(guild => guild !== null) as Guild[];
 	}
 
 	public abstract run(interaction: CommandInteraction): void;

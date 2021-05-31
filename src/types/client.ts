@@ -36,10 +36,9 @@ class CustomClient extends Client {
 		// set per guild commands
 		const guilds: Guild[] = [];
 		for(const command of commands.values()){
-			if(!command.guilds?.length) continue;
-			for(const guildResolvable of command.guilds){
-				const guild = this.guilds.resolve(guildResolvable);
-				if(!guild || guilds.includes(guild)) continue;
+			if(!command.guilds.length) continue;
+			for(const guild of command.getGuilds()){
+				if(guilds.includes(guild)) continue;
 				const commandsForGuild = commands.filter(command => command.guilds?.map(guildResolvable => this.guilds.resolve(guildResolvable)).includes(guild) ?? false);
 				try {
 					for(const command of (await guild.commands.set(commandsForGuild.map(command => command.options))).values()){
