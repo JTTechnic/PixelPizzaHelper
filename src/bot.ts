@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as dotenv from "dotenv";
 import path = require("path");
 import { ClientEvent, CustomClient } from "./types/client";
+import { Intents } from "discord.js";
 
 dotenv.config();
 
@@ -9,7 +10,9 @@ process.on("unhandledRejection", (reason, promise) => {
 	console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
 
-const client = new CustomClient();
+const client = new CustomClient({
+	intents: Intents.ALL
+});
 
 for(const file of fs.readdirSync(path.join(__dirname, "events")).filter(file => file.endsWith(".js"))){
 	const event: ClientEvent = new (require(`./events/${file}`))(client);
