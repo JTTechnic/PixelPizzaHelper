@@ -1,8 +1,26 @@
-import { ApplicationCommandPermissions, Client, ClientEvents, Collection, DMChannel, Guild, MessageEmbed, WebhookClient } from "discord.js";
+import { ApplicationCommandPermissions, Client, ClientEvents, ClientOptions, Collection, DMChannel, Guild, MessageEmbed, WebhookClient } from "discord.js";
 import { Command } from "./command";
 
 class CustomClient extends Client {
 	public commands: Collection<string, Command> = new Collection();
+
+	public constructor(options: ClientOptions){
+		super(options);
+	}
+
+	public get guild(): Guild {
+		const {MAIN_GUILD} = process.env;
+		if(!MAIN_GUILD){
+			console.error("MAIN_GUILD not set");
+			process.exit();
+		}
+		const guild = this.guilds.cache.get(MAIN_GUILD);
+		if(!guild){
+			console.error("invalid MAIN_GUILD");
+			process.exit();
+		}
+		return guild;
+	}
 
 	public async syncCommands(){
 		const commands = this.commands;
@@ -30,37 +48,21 @@ class CustomClient extends Client {
 		// sync all commands
 		await this.syncCommands();
 
-		// set global commands
-		await this.application?.commands.set(commands.filter(command => command.global).map(command => command.options));
-
-		// set per guild commands
-		const guilds: Guild[] = [];
-		for(const command of commands.values()){
-			if(!command.guilds.length) continue;
-			for(const guild of command.getGuilds()){
-				if(guilds.includes(guild)) continue;
-				const commandsForGuild = commands.filter(command => command.guilds?.map(guildResolvable => this.guilds.resolve(guildResolvable)).includes(guild) ?? false);
-				try {
-					for(const command of (await guild.commands.set(commandsForGuild.map(command => command.options))).values()){
-						if(!process.env.OWNER_ID) break;
-						let permissions: ApplicationCommandPermissions[];
-						try {
-							permissions = await command.fetchPermissions();
-						} catch (error) {
-							permissions = [];
-						}
-						permissions.push({
-							id: process.env.OWNER_ID,
-							permission: true,
-							type: "USER"
-						});
-						await command.setPermissions(permissions);
-					}
-				} catch (error) {
-					console.error(error);
-				}
-				guilds.push(guild);
+		// set commands
+		for(const command of (await this.guild.commands.set(commands.map(command => command.options))).values()){
+			if(!process.env.OWNER_ID) break;
+			let permissions: ApplicationCommandPermissions[];
+			try {
+				permissions = await command.fetchPermissions();
+			} catch (error) {
+				permissions = [];
 			}
+			permissions.push({
+				id: process.env.OWNER_ID,
+				permission: true,
+				type: "USER"
+			});
+			await command.setPermissions(permissions);
 		}
 	}
 
