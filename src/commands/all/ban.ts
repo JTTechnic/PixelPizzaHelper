@@ -39,7 +39,14 @@ module.exports = class BanCommand extends Command {
 				description: "You need the `BAN_MEMBERS` permission to use this command"
 			}));
 		}
-		const member = interaction.options[0].member as GuildMember;
+		const member = interaction.options[0].member as GuildMember | undefined;
+		if(!member){
+			return await Util.sendEmbed(interaction, new MessageEmbed({
+				color: "RED",
+				title: "Member not found",
+				description: "This member could not be found"
+			}));
+		}
 		const reason = interaction.options[1].value as string;
 		const days = interaction.options[2]?.value as number | undefined;
 		if(!member.bannable){
