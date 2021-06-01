@@ -1,6 +1,6 @@
 {
   "name": "pixelpizzahelper2",
-  "version": "1.3.0",
+  "version": "1.0.3",
   "description": "Displays the pixel pizza discord server stats",
   "main": "dist/bot.js",
   "scripts": {
