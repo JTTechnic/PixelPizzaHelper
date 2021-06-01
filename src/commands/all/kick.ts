@@ -23,8 +23,6 @@ module.exports = class KickCommand extends Command {
 					required: true
 				}
 			]
-		}, {
-			global: false
 		});
 	}
 
