@@ -21,7 +21,7 @@
   "homepage": "https://github.com/JTTechnic/PixelPizzaStats#readme",
   "dependencies": {
     "common-tags": "^1.8.0",
-    "discord.js": "github:discordjs/discord.js#e033dd080aabb12dcfe2a0708a10a92d4fb68000",
+    "discord.js": "github:discordjs/discord.js#cbd7f2b9aa44a9240947ed716d0e72257ac499f7",
     "dotenv": "^10.0.0"
   },
   "devDependencies": {
